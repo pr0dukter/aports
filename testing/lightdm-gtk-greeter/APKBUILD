@@ -11,6 +11,7 @@ depends="lightdm"
 makedepends="gtk+3.0-dev lightdm-dev exo-dev"
 subpackages="$pkgname-lang $pkgname-doc"
 source="https://launchpad.net/${pkgname}/${pkgver%.?}/${pkgver}/+download/${pkgname}-${pkgver}.tar.gz"
+options="!check"
 
 build() {
 	cd "$builddir"
