@@ -44,22 +44,22 @@ package() {
 	mkdir -p "$pkgdir"/usr/bin
 	mkdir -p "$pkgdir"/usr/share/pixmaps
 	mkdir -p "$pkgdir"/usr/share/applications
-	mkdir -p "$pkgdir"/usr/share/${pkgname}/gamelists
-	mkdir -p "$pkgdir"/usr/share/${pkgname}/themes
+	mkdir -p "$pkgdir"/usr/share/$pkgname/gamelists
+	mkdir -p "$pkgdir"/usr/share/$pkgname/themes
 	install -Dm755 emulationstation "$pkgdir"/usr/bin/emulationstation
-	install -Dm644 "$srcdir"/${pkgname}.png "$pkgdir"/usr/share/pixmaps/
-	install -Dm644 "$srcdir"/${pkgname}.desktop "$pkgdir"/usr/share/applications/
+	install -Dm644 "$srcdir"/$pkgname.png "$pkgdir"/usr/share/pixmaps/
+	install -Dm644 "$srcdir"/$pkgname.desktop "$pkgdir"/usr/share/applications/
 }
 
 theme() {
-	pkgdesc="${_theme_name} theme for $_pkgname"
+	pkgdesc="$_theme_name theme for $_pkgname"
 	license="CC-BY-NC-SA-3.0"
 	url="https://github.com/rxbrad/es-theme-gbz35"
 	provides="$pkgname-theme-default"
 
-	install -d -m755 "$subpkgdir"/usr/share/${pkgname}/themes
+	install -d -m755 "$subpkgdir"/usr/share/$pkgname/themes
 	cp -r "$srcdir"/es-theme-$_theme_name-$_theme_commit \
-		"$subpkgdir"/usr/share/${pkgname}/themes/$_theme_name
+		"$subpkgdir"/usr/share/$pkgname/themes/$_theme_name
 }
 sha512sums="a9501a2f69d5f828316bde9660638beed402535796bf63179bdabffac86da6ef4a280ea35993270fd932db918d80cd961bfe6522af72b61387e913b092d696b6  emulationstation-2.7.1.tar.gz
 f95412f07220da87bef53e717e1ffdde2cd37d359af202f50f84d25bb9229fc0a3c3cd0c2e7a4388f9bcffa1523d38bc23e1bf855f4bebfe5b65fbe0016af801  emulationstation-theme-gbz35-e8f0ec5a59cbec32135e770ab07aea8b86e5ff79.tar.gz
