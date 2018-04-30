@@ -15,7 +15,7 @@ _pugixml_commit="51322cffa1b9c69a28b89a239ebe7133fa4cdda2"
 subpackages="$pkgname-theme-$_theme_name:theme:noarch"
 options="!check" # No test suite
 
-source="$pkgname-$pkgver.tar.gz::https://github.com/RetroPie/$_distname/archive/v$pkgver.tar.gz
+source="$pkgname-$pkgver.tar.gz::https://github.com/RetroPie/$_pkgname/archive/v$pkgver.tar.gz
 	$pkgname-theme-$_theme_name-$_theme_commit.tar.gz::https://github.com/rxbrad/es-theme-$_theme_name/archive/$_theme_commit.tar.gz
 	pugixml-$_pugixml_commit.tar.gz::https://github.com/zeux/pugixml/archive/$_pugixml_commit.tar.gz
 	default-paths.patch
