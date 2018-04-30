@@ -1,30 +1,33 @@
 # Contributor: Taner Tas <taner76@gmail.com>
 # Maintainer: Taner Tas <taner76@gmail.com>
 pkgname=emulationstation
+_pkgname="EmulationStation"
 pkgver=2.7.1
 pkgrel=0
 pkgdesc="EmulationStation is a cross-platform graphical front-end for emulators with controller navigation."
 url="https://github.com/RetroPie/EmulationStation"
 arch="all"
 license="MIT"
-depends="$pkgname-theme-default"
 makedepends="boost-dev freeimage-dev freetype-dev sdl2-dev mesa-dev alsa-lib-dev vlc-dev curl-dev cmake"
-subpackages="$pkgname-theme-default:theme:noarch"
-options="!check"
-_distname="EmulationStation"
-_pugixml_git="https://github.com/zeux/pugixml.git"
+_theme_name="gbz35"
+_theme_commit="e8f0ec5a59cbec32135e770ab07aea8b86e5ff79"
+_pugixml_commit="51322cffa1b9c69a28b89a239ebe7133fa4cdda2"
+subpackages="$pkgname-theme-$_theme_name:theme:noarch"
+options="!check" # No test suite
 
-source="${pkgname}-${pkgver}.tar.gz::https://github.com/RetroPie/${_distname}/archive/v${pkgver}.tar.gz
+source="$pkgname-$pkgver.tar.gz::https://github.com/RetroPie/$_distname/archive/v$pkgver.tar.gz
+	$pkgname-theme-$_theme_name-$_theme_commit.tar.gz::https://github.com/rxbrad/es-theme-$_theme_name/archive/$_theme_commit.tar.gz
+	pugixml-$_pugixml_commit.tar.gz::https://github.com/zeux/pugixml/archive/$_pugixml_commit.tar.gz
 	default-paths.patch
 	emulationstation.desktop
 	emulationstation.png"
-builddir="$srcdir"/$_distname-$pkgver
+builddir="$srcdir"/$_pkgname-$pkgver
 
 prepare() {
 	cd "$builddir"
         if [ ! -d external/pugixml.dist ]; then
         mv -f external/pugixml external/pugixml.dist
-        git clone --depth=1 "$_pugixml_git" external/pugixml
+	cp -aP "$srcdir"/pugixml-$_pugixml_commit external/pugixml
         fi
 	default_prepare
 }
@@ -36,6 +39,7 @@ build() {
 }
 
 package() {
+	depends="$pkgname-theme-default"
 	cd "$builddir"
 	mkdir -p "$pkgdir"/usr/bin
 	mkdir -p "$pkgdir"/usr/share/pixmaps
@@ -48,16 +52,18 @@ package() {
 }
 
 theme() {
-	local _theme_git="https://github.com/rxbrad/es-theme-gbz35.git"
-	local _theme_name="gbz35"
-	pkgdesc="${_theme_name} theme for EmulationStation"
+	pkgdesc="${_theme_name} theme for $_pkgname"
 	license="CC-BY-NC-SA-3.0"
+	url="https://github.com/rxbrad/es-theme-gbz35"
+	provides="$pkgname-theme-default"
 
-	mkdir -p "$subpkgdir"/usr/share/${pkgname}/themes
-	git clone --depth=1 "$_theme_git" "$subpkgdir"/usr/share/${pkgname}/themes/${_theme_name}
-	rm -rf "$subpkgdir"/usr/share/${pkgname}/themes/${_theme_name}/.git
+	install -d -m755 "$subpkgdir"/usr/share/${pkgname}/themes
+	cp -r "$srcdir"/es-theme-$_theme_name-$_theme_commit \
+		"$subpkgdir"/usr/share/${pkgname}/themes/$_theme_name
 }
 sha512sums="a9501a2f69d5f828316bde9660638beed402535796bf63179bdabffac86da6ef4a280ea35993270fd932db918d80cd961bfe6522af72b61387e913b092d696b6  emulationstation-2.7.1.tar.gz
+f95412f07220da87bef53e717e1ffdde2cd37d359af202f50f84d25bb9229fc0a3c3cd0c2e7a4388f9bcffa1523d38bc23e1bf855f4bebfe5b65fbe0016af801  emulationstation-theme-gbz35-e8f0ec5a59cbec32135e770ab07aea8b86e5ff79.tar.gz
+aadc5d219c6fd6e288920dea56ab299c326ee821526d281762d5f04ef22e74365411fdfd9f8314e9e8e8c05e140f73319696ec85f8980b4c5cb8bfd795d2f0df  pugixml-51322cffa1b9c69a28b89a239ebe7133fa4cdda2.tar.gz
 3c0fe93a76fe2f702cdc1870ebfe12b3305ba24a75e90ea6dde6d479c654f662d210e5b35ce3451f3f03902ebbaeb27d117e8ca94f5b117748bcd286f37bae39  default-paths.patch
 814a196d234266809f2c3f64c7179e3138e017eb67d1c54dcc2e8c504c1439cb73f17352575cd582ce044b08405f3a369d049127c9f4c5a1336072435dfa54f0  emulationstation.desktop
 4a24c435aeef22d7d69c3af113bff97c2c99b4a1eb2e5c97f53a6cce1f11a4f92bf4250388598a89f8fd462e03ea6fc73b75739573faf6f7b30c98ab53ddb5bf  emulationstation.png"
