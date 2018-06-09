@@ -1,0 +1,83 @@
+# Contributor: Taner Tas <taner76@gmail.com>
+# Maintainer: Taner Tas <taner76@gmail.com>
+pkgname=palemoon
+pkgver=27.9.2
+pkgrel=0
+pkgdesc="Goanna-based web browser focusing on efficiency and customization"
+url="https://www.palemoon.org"
+arch="all" # May not build on all platforms
+license="MPL-2.0"
+depends=""
+makedepends="unzip zip coreutils python2 yasm autoconf2.13 alsa-lib-dev
+	gtk+2.0-dev dbus-glib-dev libxt-dev startup-notification-dev
+	linux-headers fts-dev bsd-compat-headers
+	"
+install="$pkgname.post-install"
+source="$pkgname-$pkgver.tar.gz::https://github.com/MoonchildProductions/Pale-Moon/archive/${pkgver}_Release.tar.gz
+	mozconfig
+	bugzilla-1274732.patch
+	disable-hunspell_hooks.patch
+	fix-fortify-system-wrappers.patch
+	fix-arm-atomics-grsec.patch
+	fix-arm-version-detect.patch
+	mozalloc-cstdlib.patch
+	mozilla-build-arm.patch
+	musl-basic.patch
+	rhbz-966424.patch
+	"
+builddir="$srcdir/Pale-Moon-${pkgver}_Release"
+_pmappdir=/usr/lib/$pkgname-$pkgver
+options="!check" # No test suite
+
+prepare() {
+	cd "$builddir"
+	cp "$srcdir/mozconfig" .mozconfig
+	echo mk_add_options MOZ_OBJDIR="$builddir"/pmbuild >> .mozconfig
+	default_prepare
+}
+
+build() {
+	cd "$builddir"
+	export CFLAGS="$CFLAGS -fno-delete-null-pointer-checks -fno-schedule-insns2" # Got from Alpine Firefox build
+	export CXXFLAGS="$CFLAGS"
+	export _OPTIMIZE="-O2"
+
+	case $CARCH in
+	x86) export _OPTIMIZE="$_OPTIMIZE -msse2 -mfpmath=sse" ;;
+	esac
+
+	export LDFLAGS="$LDFLAGS -Wl,-rpath,${_pmappdir}"
+	export LIBS="$LIBS -lfts"
+	export SHELL=/bin/sh
+	export MOZ_MAKE_FLAGS="$MAKEOPTS"
+	./mach build
+}
+
+package() {
+	cd "$builddir"
+	DESTDIR="$pkgdir" ./mach install
+	rm -rf "$pkgdir"/usr/include
+	rm -rf "$pkgdir"/usr/lib/$pkgname-devel-$pkgver
+	rm -rf "$pkgdir"/usr/share/idl
+	mkdir -p "$pkgdir"/usr/share/icons/hicolor/16x16/apps \
+	"$pkgdir"/usr/share/icons/hicolor/32x32/apps \
+	"$pkgdir"/usr/share/icons/hicolor/48x48/apps \
+	"$pkgdir"/usr/share/icons/hicolor/128x128/apps
+	install -Dm644 "$builddir"/browser/branding/official/palemoon.desktop "$pkgdir"/usr/share/applications/palemoon.desktop
+	ln -s /usr/lib/$pkgname-$pkgver/browser/chrome/icons/default/default16.png "$pkgdir/usr/share/icons/hicolor/16x16/apps/palemoon.png"
+	ln -s /usr/lib/$pkgname-$pkgver/browser/chrome/icons/default/default32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/palemoon.png"
+	ln -s /usr/lib/$pkgname-$pkgver/browser/chrome/icons/default/default48.png "$pkgdir/usr/share/icons/hicolor/48x48/apps/palemoon.png"
+	ln -s /usr/lib/$pkgname-$pkgver/browser/icons/mozicon128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/palemoon.png"
+	rm -f "$pkgdir"/usr/lib/$pkgname-$pkgver/palemoon-bin
+}
+sha512sums="372b5bb5e4340f445d9e2a9334c1cbfb7c8e7465cbc8db695a632d63a7923c5a909091293b654a0f6299ab671f4ca2ab61f4b19be667df4a5b1d50c6b409cf64  palemoon-27.9.2.tar.gz
+56b68b3d9c85ee609720a7f948069ec7e7366fbda054a4453144e7983c6b9ab09ab10adae2ef1df8997f673c6fdd7a6819c7079112b8a0fec9ec23220728e5fe  mozconfig
+a4c2dd0c2a4df735174a472e20a5cafba9ab0b298177e437ced2afcac79cdc8c1395855b4f5c5987f16eb7ca92acd0370600a0e05ba7a983302fa54cdcf76cf0  bugzilla-1274732.patch
+87b1120700aca026bb4b8968ae661f946050a7357bc3960746b00268e252aa775a6d2e4d4f2b83fe402c8b42a39565de721990198b28d618a778a15219629d5b  disable-hunspell_hooks.patch
+2a967e4619fd89a046bd40be7fdcef646fcb1eba5e47afc96aa1d59c25bcc8747cb07baee6c11f3b803db0981aced181534b806778e4d21e74958f5f4d74c784  fix-fortify-system-wrappers.patch
+ed0d344c66fc8e1cc83a11e9858b32c42e841cbeedd9eb9438811e9fcc3593dc824a8336d00058d55836cedc970aeadd6a82c6dcd7bc0fb746e564d8b478cc6c  fix-arm-atomics-grsec.patch
+fbe9e98ddc7fe2b3f74adc3b7e4fbaaad46fd38c8d073b27492d5f6dc00b7901363a27cd3cea8576485d5255c2a7aa9dbcfcf408df534ebf0ac4c3a10a376cc9  fix-arm-version-detect.patch
+eb2b343dc3ce22e2a06c7bd1d342ad7af28abe95b7d2d16fd5f335ca9867dd6f5713c224d0a0c5064960d425c6c2e9af567cd0d16fab7078aeb39acc37abd434  mozalloc-cstdlib.patch
+e2835cb06d165198c22ed2e3e9832cc978550f9262c456f5e9e3d04db83cd938e3d06fdeb75a76c7787ae1200401d04b6cb4c52dd791af6094c3c718f93a56b8  mozilla-build-arm.patch
+ac9a022004212415f213129f2ad33946f0c44bcebabd136952abb89995eadccda2dae175358090dfafd405f5cd77e25642eef12673867d0b6fe0c749df1163bc  musl-basic.patch
+4bb25a58a4087b2abdc17f1ef107bc639e320e49bf80ed567cb45ff0a4f81cc37c215d9619b612ac5a595cf8463426a14a43de6d52a02f1b2282651b58c40bc0  rhbz-966424.patch"
